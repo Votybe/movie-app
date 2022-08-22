@@ -73,6 +73,9 @@ export default {
     };
   },
   methods: {
+    getTestCommit() {
+      console.log("object");
+    },
     async getMovieByGender(item) {
       if (this.genderActif === -1) {
         let result = await axios.get(
