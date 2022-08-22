@@ -6,11 +6,11 @@
         <ul class="genderList__container">
           <li @click="getMovieByGender()">all</li>
           <li
-            v-for="(item, index) in gender"
+            v-for="(genderItem, index) in gender"
             :key="index"
-            @click="getMovieByGender(item)"
+            @click="getMovieByGender(genderItem)"
           >
-            {{ item.name }}
+            {{ genderItem.name }}
           </li>
         </ul>
       </div>
@@ -18,7 +18,12 @@
 
       <div class="second-category">
         <div class="filter-name">
-          <input type="text" placeholder="search by name" />
+          <font-awesome-icon class="icon" icon="fa-solid fa-magnifying-glass" />
+          <input
+            type="text"
+            placeholder="search by name"
+            v-model="movieField"
+          />
         </div>
 
         <div class="advanced-filter">
@@ -30,9 +35,9 @@
           </select>
         </div>
         <div class="filter-page">
-          <button>Prev</button>
-          <p>page 1</p>
-          <button>Next</button>
+          <button :disabled="currentPage === 1" @click="prevPage">Prev</button>
+          <p>page {{ currentPage }}</p>
+          <button @click="nextPage">Next</button>
         </div>
       </div>
     </div>
@@ -70,16 +75,62 @@ export default {
       gender: [],
       movies: [],
       genderActif: -1,
+      currentPage: 1,
+      movieField: "",
     };
   },
-  methods: {
-    getTestCommit() {
-      console.log("object");
+  watch: {
+    movieField: function () {
+      this.search();
     },
-    async getMovieByGender(item) {
+  },
+
+  methods: {
+    async search() {
+      if (this.movieField == "") {
+        this.getItems();
+      } else {
+        await axios
+          .get(
+            "https://api.themoviedb.org/3/search/movie?api_key=6dc646632d1c11debbc7e874ea32f797&query=" +
+              this.movieField
+          )
+          .then((response) => {
+            console.log(response.data.results[0]);
+            this.movies = response.data.results;
+            for (let index = 0; index < this.movies.length; index++) {
+              if (this.movies[index].backdrop_path == null) {
+                this.movies.splice(index);
+              }
+            }
+          });
+      }
+    },
+
+    async prevPage() {
+      if (this.currentPage !== 1) {
+        let result = await axios.get(
+          `https://api.themoviedb.org/3/list/${this
+            .currentPage--}?api_key=6dc646632d1c11debbc7e874ea32f797`
+        );
+        this.movies = result.data.items;
+      }
+    },
+    async nextPage() {
+      let result = await axios.get(
+        `https://api.themoviedb.org/3/list/${this
+          .currentPage++}?api_key=6dc646632d1c11debbc7e874ea32f797`
+      );
+      this.movies = result.data.items;
+      console.log(this.movies);
+    },
+    async getMovieByGender(genderItem) {
+      console.log(this.currentPage);
       if (this.genderActif === -1) {
         let result = await axios.get(
-          "https://api.themoviedb.org/3/list/10?api_key=6dc646632d1c11debbc7e874ea32f797"
+          `https://api.themoviedb.org/3/list/${
+            this.currentPage - 1
+          }?api_key=6dc646632d1c11debbc7e874ea32f797`
         );
         this.movies = result.data.items;
       }
@@ -87,7 +138,7 @@ export default {
       let movTemp = [];
 
       for (const iterator of this.movies) {
-        if (iterator.genre_ids.includes(item.id)) {
+        if (iterator.genre_ids.includes(genderItem.id)) {
           movTemp.push(iterator);
         }
       }
@@ -165,16 +216,22 @@ export default {
       margin: 0.3rem;
       .filter-name {
         display: flex;
-        flex-direction: column;
         margin: 0.4rem;
+        border: solid 1px #b5e4ca;
+        padding-left: 0.3rem;
+        align-items: center;
+
+        color: #b5e4ca;
+        .icon {
+          margin: 0.3rem;
+          color: #b5e4ca;
+        }
         input {
-          border: solid 1px #b5e4ca;
+          border: none;
+          background: none;
           border-radius: 9px;
           height: 2rem;
           width: 14rem;
-          background: none;
-          color: #b5e4ca;
-          padding-left: 0.3rem;
           outline: none;
           &::placeholder {
             color: #b5e4ca;
