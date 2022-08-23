@@ -14,6 +14,7 @@
           </li>
         </ul>
       </div>
+
       <h2 class="title__advancedfilter">Advanced filter</h2>
 
       <div class="second-category">
@@ -26,6 +27,12 @@
           />
         </div>
 
+        <div class="filter-page">
+          <button :disabled="currentPage === 1" @click="prevPage">Prev</button>
+          <p>page {{ currentPage }}</p>
+          <button @click="nextPage">Next</button>
+        </div>
+
         <div class="advanced-filter">
           <select name="" id="" value="ezfz">
             <option value="" selected disabled hidden>Sort by</option>
@@ -34,18 +41,17 @@
             <option value="name">name</option>
           </select>
         </div>
-        <div class="filter-page">
-          <button :disabled="currentPage === 1" @click="prevPage">Prev</button>
-          <p>page {{ currentPage }}</p>
-          <button @click="nextPage">Next</button>
-        </div>
       </div>
     </div>
 
     <h2>All movies</h2>
 
     <ul class="movieList__container">
-      <li v-for="(movie, index) in movies" :key="index">
+      <li
+        v-for="(movie, index) in movies"
+        :key="index"
+        @click="this.$router.push('/movie/' + movie.id)"
+      >
         <img
           :src="
             'https://www.themoviedb.org/t/p/w220_and_h330_face/' +
@@ -75,7 +81,7 @@ export default {
       gender: [],
       movies: [],
       genderActif: -1,
-      currentPage: 1,
+      currentPage: 2,
       movieField: "",
     };
   },
@@ -122,10 +128,17 @@ export default {
           .currentPage++}?api_key=6dc646632d1c11debbc7e874ea32f797`
       );
       this.movies = result.data.items;
-      console.log(this.movies);
+    },
+    compare(a, b) {
+      if (a.vote_average < b.vote_average) {
+        return -1;
+      }
+      if (a.vote_average > b.vote_average) {
+        return 1;
+      }
+      return 0;
     },
     async getMovieByGender(genderItem) {
-      console.log(this.currentPage);
       if (this.genderActif === -1) {
         let result = await axios.get(
           `https://api.themoviedb.org/3/list/${
@@ -220,7 +233,7 @@ export default {
         border: solid 1px #b5e4ca;
         padding-left: 0.3rem;
         align-items: center;
-
+        background-color: #2b3034;
         color: #b5e4ca;
         .icon {
           margin: 0.3rem;
@@ -229,9 +242,9 @@ export default {
         input {
           border: none;
           background: none;
-          border-radius: 9px;
           height: 2rem;
           width: 14rem;
+          color: #b5e4ca;
           outline: none;
           &::placeholder {
             color: #b5e4ca;
@@ -246,17 +259,18 @@ export default {
         flex-direction: column;
         align-items: center;
         select {
-          background-color: #202427;
+          background-color: #2b3034;
           color: #b5e4ca;
           border: solid 1px #b5e4ca;
           padding: 0.3rem 0.4rem;
           outline: none;
-          border-radius: 9px;
+          height: 2rem;
         }
       }
 
       .filter-page {
         padding: 0.4rem;
+        margin: 0 5rem;
         display: flex;
         align-items: center;
         width: 100%;
@@ -267,8 +281,6 @@ export default {
           background-color: #b5e4ca;
           color: #202427;
           padding: 0.7rem 1.2rem;
-          border-radius: 9px;
-          margin: 0.4rem;
           border: none;
 
           &:hover {
@@ -295,7 +307,7 @@ export default {
       background-color: #2b3034;
       box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
       color: #b5e4ca;
-      width: 260px;
+      width: 240px;
       margin: 0.4rem;
       list-style-type: none;
       height: 350px;
@@ -330,6 +342,7 @@ export default {
 
       img {
         height: 250px;
+        width: 100%;
       }
     }
   }
